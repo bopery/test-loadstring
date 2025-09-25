@@ -1,0 +1,89 @@
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+
+local plr = Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+local anim = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
+local pack = plr:WaitForChild("Backpack")
+
+-- Remove old Heil object if exists
+if workspace:FindFirstChild("Heil") then
+    workspace:FindFirstChild("Heil"):Destroy()
+end
+
+-- Animation IDs for R6 and R15 rigs (replace with your own animation IDs)
+local animIDs = {
+    R6 = "186904307",    -- Replace with your R6 animation ID
+    R15 = "1234567890"   -- Replace with your R15 animation ID
+}
+
+-- Determine rig type string
+local function getRigType()
+    if hum.RigType == Enum.HumanoidRigType.R6 then
+        return "R6"
+    else
+        return "R15"
+    end
+end
+
+-- Notification function
+local function Notify(Title, Text, Duration)
+    StarterGui:SetCore("SendNotification", {
+        Title = Title,
+        Text = Text or "",
+        Duration = Duration or 5
+    })
+end
+
+Notify("Made by bopery7", "Destroy the niggers", 4)
+
+-- Create Animation instance
+local animation = Instance.new("Animation")
+animation.Name = "Heil"
+animation.Parent = workspace
+animation.AnimationId = "rbxassetid://" .. animIDs[getRigType()]
+
+-- Create Tool
+local tool = Instance.new("Tool")
+tool.Name = "Salute!"
+tool.RequiresHandle = false
+tool.Parent = pack
+
+local animTrack
+
+tool.Equipped:Connect(function()
+    if animTrack then
+        animTrack:Stop()
+        animTrack:Destroy()
+        animTrack = nil
+    end
+    animTrack = anim:LoadAnimation(animation)
+    animTrack.Priority = Enum.AnimationPriority.Action
+    animTrack.Looped = true
+    animTrack:Play()
+end)
+
+tool.Unequipped:Connect(function()
+    if animTrack then
+        animTrack:Stop()
+        animTrack:Destroy()
+        animTrack = nil
+    end
+end)
+
+hum.Died:Connect(function()
+    if animTrack then
+        animTrack:Stop()
+        animTrack:Destroy()
+        animTrack = nil
+    end
+end)
+
+-- Optional: Update animation if character respawns
+plr.CharacterAdded:Connect(function(newChar)
+    char = newChar
+    hum = char:WaitForChild("Humanoid")
+    anim = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
+    animation.AnimationId = "rbxassetid://" .. animIDs[getRigType()]
+end)
