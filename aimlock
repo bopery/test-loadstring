@@ -1,0 +1,60 @@
+--toggle is X uh have fun idk lol
+
+
+
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+local players = game:GetService("Players")
+
+local lockedTarget = nil
+local trackingEnabled = false
+
+local function getPlayerUnderCursor()
+    local mouse = player:GetMouse()
+    local closest = nil
+    local shortestDist = math.huge
+
+    for _, plr in ipairs(players:GetPlayers()) do
+        if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
+            local headPos = plr.Character.Head.Position
+            local screenPos, onScreen = camera:WorldToViewportPoint(headPos)
+            if onScreen then
+                local dist = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
+                if dist < shortestDist then
+                    shortestDist = dist
+                    closest = plr
+                end
+            end
+        end
+    end
+
+    return closest
+end
+
+userInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.X then
+        if trackingEnabled then
+            trackingEnabled = false
+            lockedTarget = nil
+            print("Camera lock OFF")
+        else
+            local target = getPlayerUnderCursor()
+            if target then
+                lockedTarget = target
+                trackingEnabled = true
+                print("Camera locked on:", target.Name)
+            end
+        end
+    end
+end)
+
+runService.RenderStepped:Connect(function()
+    if trackingEnabled and lockedTarget and lockedTarget.Character and lockedTarget.Character:FindFirstChild("Head") then
+        local headPos = lockedTarget.Character.Head.Position
+        local camPos = camera.CFrame.Position
+        camera.CFrame = CFrame.new(camPos, headPos)
+    end
+end)
